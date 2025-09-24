@@ -1,0 +1,48 @@
+registry:
+  - file: DA_Block.py
+    class_name: DA_Block
+    alias: DA_Block
+
+model:
+  inputs: [x]
+  outputs: [head]
+  nodes:
+    - name: stem
+      target: torch.nn.Conv2d
+      init: {in_channels: 3, out_channels: 32, kernel_size: 3, padding: 1}
+      inputs: [x]
+    - name: stem_bn
+      target: torch.nn.BatchNorm2d
+      init: {num_features: 32}
+      inputs: [stem]
+    - name: stem_act
+      target: torch.nn.ReLU
+      init: {inplace: true}
+      inputs: [stem_bn]
+    - name: dab
+      target: DA_Block
+      init: {in_channels: 32}
+      inputs: [stem_act]
+    - name: pool
+      target: torch.nn.AdaptiveAvgPool2d
+      init: {output_size: 1}
+      inputs: [dab]
+    - name: flatten
+      op: flatten
+      call: {start_dim: 1}
+      inputs: [pool]
+    - name: head
+      target: torch.nn.Linear
+      init: {in_features: 32, out_features: 10}
+      inputs: [flatten]
+
+loss:
+  target: torch.nn.CrossEntropyLoss
+
+optimizer:
+  target: torch.optim.Adam
+  params: {lr: 0.001}
+
+trainer:
+  epochs: 2
+  log_every: 5
