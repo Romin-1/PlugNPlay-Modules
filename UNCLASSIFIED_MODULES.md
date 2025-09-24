@@ -1,154 +1,135 @@
 # 顶层未分类模块梳理
 
-本节将仓库根目录下未归入子文件夹的 108 个 Python 模块按功能归纳为六大类，列出文件名、主要类定义以及源码注释中提供的论文或用途说明，便于快速检索。
+为方便模型自动构建脚本查找组件，以下按功能类别对仓库根目录的 108 个独立 Python 模块逐一做简要介绍。
 
-### 面向目标检测任务的推荐模块
+## 目标检测增强
 
-* **AFPN.py** – 复现 AFPN（Asymptotic Feature Pyramid Network），提供上/下采样与自适应尺度融合单元，可直接替换常规 FPN 以增强检测器的多尺度特征聚合能力。【F:AFPN.py†L5-L119】
-* **MDCR.py** – 来自红外小目标检测的多尺度空洞卷积残差块，将输入通道四分组并行感受野后再重组，适合在颈部或检测头中加强局部背景抑制。【F:MDCR.py†L4-L120】
-* **UCDC.py** – 基于空洞卷积的 U 形特征抽取单元，用于红外小目标检测，可插入检测骨干以提升细粒度响应。【F:UCDC.py†L4-L50】
-* **CPAM.py** – 源自 ASF-YOLO 的通道/位置注意力模块，针对并行分支进行加权融合，适合作为检测颈部的注意力增强层。【F:CPAM.py†L4-L86】
-* **MCM.py** – RGB-D 显著性检测中的多尺度上下文模块，支持跨尺度特征拼接与预测分支，可迁移到多模态或显著性相关的检测任务中。【F:MCM.py†L4-L65】
+- **AFPN.py**：实现非对称特征金字塔网络的上下采样与尺度自适应融合单元，可作为检测颈部提升多尺度响应。
+- **CPAM.py**：复现 ASF-YOLO 的通道与位置注意力分支，对多路特征进行加权融合以增强检测头。
+- **MDCR.py**：提供多尺度空洞卷积残差块，将特征拆分并行感受野后重组，用于红外小目标突出。
+- **MCM.py**：包含多尺度上下文调制与预测分支，服务于 RGB-D 显著性检测的模态融合与增强。
+- **UCDC.py**：实现空洞卷积堆叠的 U 型特征提取结构，用于小目标检测的细粒度对比增强。
 
 ## 卷积与多尺度结构
 
-| 文件 | 主要类 | 源注释摘要 |
-| --- | --- | --- |
-| (BMVC 2023)CoordGate.py | CoordGate 【F:(BMVC 2023)CoordGate.py†L5-L80】 | — |
-| (CVPR 2019) DCNv2.py | DCNv2 【F:(CVPR 2019) DCNv2.py†L5-L142】 | — |
-| (CVPR 2024)IDC.py | InceptionDWConv2d 【F:(CVPR 2024)IDC.py†L5-L47】 | — |
-| (CVPR 2024)PKIBlock.py | ConvModule, InceptionBottleneck, CAA 【F:(CVPR 2024)PKIBlock.py†L11-L82】 | — |
-| (CVPR2020)strip_pooling.py | StripPooling 【F:(CVPR2020)strip_pooling.py†L5-L86】 | ---------------------------------------；论文: Strip Pooling: Rethinking spatial pooling for scene parsing  (CVPR2020)；Github地址: https://github.com/houqb/SPNet；---------------------------------------【F:(CVPR2020)strip_pooling.py†L2-L4】 |
-| DFF2d.py | DFF 【F:DFF2d.py†L5-L46】 | — |
-| FEM.py | FEM, BasicConv 【F:FEM.py†L7-L55】 | — |
-| FMS.py | Bconv, SppCSPC, ConvBNReLU 【F:FMS.py†L6-L70】 | — |
-| GhostModule.py | GhostModule 【F:GhostModule.py†L5-L40】 | — |
-| GlobalPMFSBlock.py | DepthWiseSeparateConvBlock, GlobalPMFSBlock_AP_Separate 【F:GlobalPMFSBlock.py†L9-L90】 | 论文：PMFSNet: Polarized Multi-scale Feature Self-attention Network For Lightweight Medical Image Segmentation；论文地址：https://arxiv.org/pdf/2401.07579；github地址：https://github.com/yykzjh/PMFSNet【F:GlobalPMFSBlock.py†L1-L3】 |
-| HFF.py | LayerNorm, DropPath, Conv 【F:HFF.py†L7-L122】 | 论文：HiFuse: Hierarchical multi-scale feature fusion network for medical image classification；论文地址：https://www.sciencedirect.com/science/article/abs/pii/S1746809423009679【F:HFF.py†L4-L5】 |
-| LDConv.py | LDConv 【F:LDConv.py†L5-L44】 | — |
-| RFAConv.py | Conv, h_sigmoid, h_swish 【F:RFAConv.py†L7-L98】 | — |
-| SPConv.py | SPConv_3x3 【F:SPConv.py†L5-L69】 | — |
-| UIB.py | UniversalInvertedBottleneckBlock 【F:UIB.py†L7-L90】 | — |
-| dynamic_conv.py | attention1d, Dynamic_conv1d, attention2d 【F:dynamic_conv.py†L7-L123】 | 论文：Dynamic Convolution: Attention over Convolution Kernels；论文地址：https://zhuanlan.zhihu.com/p/208519425【F:dynamic_conv.py†L5-L6】 |
+- **(BMVC 2023)CoordGate.py**：通过坐标编码控制通道门控，按位置调节卷积响应，实现空间可变卷积。
+- **(CVPR 2019) DCNv2.py**：封装可学习偏移与调制的二代可变形卷积算子，兼容 PyTorch 的 deform_conv2d。
+- **(CVPR 2024)IDC.py**：InceptionNeXt 提出的分支深度可分离卷积块，将输入拆成四路并融合长短条卷积。
+- **(CVPR 2024)PKIBlock.py**：实现 PKIBlock 中的多路卷积瓶颈与通道注意力组合，用于轻量 Inception 模块。
+- **(CVPR2020)strip_pooling.py**：StripPooling 模块以长条池化捕获长程依赖，并与局部卷积耦合进行上下文聚合。
+- **DFF2d.py**：Dynamic Feature Fusion 块使用并行卷积支路和注意力加权融合多尺度纹理。
+- **FEM.py**：FFCA-YOLO 的特征增强模块，集成多尺度分支和膨胀卷积以强化小目标感受野。
+- **FMS.py**：SFFNet 的波小波与卷积分支结合结构，可在空间与频域间交互并保留多尺度细节。
+- **GhostModule.py**：实现 GhostNet 提出的廉价线性算子与逐点卷积组合，生成幽灵特征减少计算。
+- **GlobalPMFSBlock.py**：PMFSNet 中的全局极化多尺度特征块，结合深度可分离卷积与自注意强化全局上下文。
+- **HFF.py**：HiFuse 网络的层级融合骨干，交替使用深度可分离卷积与残差连接堆叠多尺度特征。
+- **LDConv.py**：线性可形变卷积通过预测稀疏偏移参数实现坐标采样，以降低可变形卷积计算。
+- **RFAConv.py**：RFAConv 在常规卷积基础上引入注意力权重，动态重构空间核并保留轻量性。
+- **SPConv.py**：将输入分成 3×3 与 1×1 分支的分离并行卷积，辅以自适应池化实现轻量混合感受野。
+- **UIB.py**：MobileNetV4 的通用倒残差块，支持多阶段深度卷积与可调扩张比。
+- **dynamic_conv.py**：Dynamic Convolution 框架，根据输入生成多组卷积核权重，实现输入自适应卷积。
 
-## 工具/辅助
+## 注意力与Transformer
 
-| 文件 | 主要类 | 源注释摘要 |
-| --- | --- | --- |
-| 特征维度转换.py |  【F:特征维度转换.py†L1-L9】 | — |
+- **(ACCV 2022)CSCA.py**：跨模态人群计数的空间通道注意力块，融合多模态特征并执行尺度自适应。
+- **(ACCV 2024) LIA.py**：Local Interaction Attention 结合软池化与局部注意，实现轻量图像复原增强。
+- **(Arxiv2024)MDAF.py**：MDAF 模块提供无偏与有偏 LayerNorm 以及多头动态融合结构，适配频域注意。
+- **(CVPR 2022) DAT.py**：Deformable Attention Transformer 的注意力实现，支持多尺度采样点偏移。
+- **(CVPR 2024)RAMiT.py**：RAMiT 引入互反注意力混合机制，包含 QKV 投影与空间自注意层。
+- **(ECCV 2024)HTB.py**：Histogram Transformer Block 提供直方图引导的注意力与归一化组合应对恶劣天气。
+- **(ECCV2024)SMFA.py**：SMFA 模块以深度 MLP 与空间调制提升超分辨率网络的适应性。
+- **(ICCV 2021) RA.py**：Residual Attention 块结合通道和空间权重，以残差方式提升多标签识别。
+- **(ICCV2023)SAFM.py**：SAFM 使用多尺度滤波与加权聚合，为轻量图像复原提供语义自适应。
+- **(ICLR 2022) Crossformer.py**：CrossFormer 的跨尺度注意力与动态位置偏置实现，可用于多尺度 Transformer。
+- **(ICLR 2022) MobileViTAttention.py**：MobileViT 注意力堆叠前置归一化与前馈，适配移动端视觉 Transformer。
+- **(ICLR 2024)CA Block.py**：MogaNet 的通道聚合块，使用元素缩放与双层 FFN 聚合多阶信息。
+- **(ICPR 2022) MOATransformer.py**：MOA Transformer 提供窗口与全局注意组合，支持多尺度聚合。
+- **(NeurIPS 2021) CoAtNet.py**：CoAtNet 模块融合卷积与注意力，包含高效缩放点积注意实现。
+- **(NeurIPS 2021) GFNet.py**：Global Filter Networks 的频域滤波注意力，配合 PatchEmbed 与 MLP。
+- **(TPAMI 2022) ViP.py**：Vision Permutator 的加权通道置换 MLP，重排特征以模拟注意力。
+- **(arXiv 2019) ECA.py**：ECA 注意力以局部一维卷积建模通道间交互，避免维度压缩。
+- **(arXiv 2020 ) SSAN.py**：简化的缩放点积注意力，通过共享投影实现高效自注意。
+- **(arXiv 2021) AFT.py**：Axial Fusion Transformer 使用全局权重与位置偏置构建轻量注意力。
+- **(arXiv 2021) EA.py**：External Attention 通过外部记忆键值构建稀疏注意力响应。
+- **(arXiv 2021) MobileViTv2.py**：MobileViTv2 模块结合线性注意力与卷积分支，用于轻量视觉骨干。
+- **(arXiv 2021) PSA.py**：Pixel Shuffle Attention 通过像素重排加强空间上下文聚合。
+- **(arXiv 2021) PSAN.py**：Polarized Self-Attention 提供并行与串行分支以分离水平/垂直注意。
+- **(arXiv 2021) S2Attention.py**：S2Attention 拆分注意力头，结合通道重排实现分层聚合。
+- **(arXiv 2023) ScaledDotProductAttention.py**：封装标准缩放点积注意力的查询、键值与缩放流程。
+- **(arXiv 2024) MoHAttention.py**：MoHAttention 模块混合多阶 Hadamard 注意力以增强图像复原。
+- **CPCA2d.py**：通道注意力块结合多尺度池化与卷积，输出逐通道重标系数。
+- **CRMSA.py**：交叉区域多头注意通过内外部注意力桥接，服务遥感影像理解。
+- **DA.py**：Double Attention Layer 将压缩特征映射成注意力图，再与值映射重分配。
+- **DASI.py**：DASI 结构通过并行卷积与注意力袋，实现多尺度信息融合。
+- **DA_Block.py**：Dual Attention Block 同时计算位置与通道注意并与深度可分离卷积结合。
+- **DICAM.py**：DICAM 引入多尺度卷积分支与通道注意融合用于上下文增强。
+- **DSAM.py**：DSAM 结合立方注意与条带注意，针对多方向特征赋权。
+- **EFF2d.py**：Efficient Attention Gate 同时建模空间注意与通道门控，实现轻量特征筛选。
+- **ENLTB.py**：ENLTB 块堆叠归一化、线性投影与跨层注意，实现轻量非局部交互。
+- **FADConv.py**：频率自适应空洞卷积结合频域选择器与多尺度空洞率，统一卷积与注意力。
+- **FCA.py**：FCAttention 模块混合卷积与注意力分支，对特征进行频域重加权。
+- **FCHiLo.py**：FCHiLo 使用频域位置编码与多分辨卷积分支加强高低频协同。
+- **FECAttention.py**：FEC 注意力通过离散余弦变换抽取通道频率信息并生成权重。
+- **FFA.py**：FFA 模块含位置与通道注意残块，专注图像去雾去噪场景。
+- **FMB.py**：FMB 堆叠动态 MLP 与并行卷积分支，提供频域调制能力。
+- **FMM.py**：FMM 结合通道压缩、门控与自适应注意，强化多模态特征融合。
+- **GAB.py**：Group Aggregation Bridge 使用多组卷积和注意融合连接多尺度块。
+- **GAU.py**：GAU 模块包含时序和通道注意，用于视频或序列特征融合。
+- **GCTattention.py**：GCT 注意力以全局上下文生成门控系数，重加权输入通道。
+- **GHPA.py**：GHPA 采用分组多轴 Hadamard 乘积，捕获方向性上下文。
+- **GLSA.py**：GLSA 上下文块结合多分支卷积与注意力，构建轻量语义捕获。
+- **HAAM.py**：HAAM 包含通道与空间双支路注意力，用于多光谱图像。
+- **HWAB.py**：HWAB 结合小波变换与自适应注意，实现频域-空间双重增强。
+- **LAE.py**：LAE 模块串联卷积和注意力，通过局部注意强化边缘细节。
+- **LGAG.py**：LGAG 块用局部全局注意桥接多尺度特征。
+- **LPA.py**：LPA 将通道与空间注意解耦建模，用于低光图像增强。
+- **MDTA.py**：多头深度可分离转置注意力（MDTA）结合深度卷积与自注意。
+- **MHIASA.py**：MHIASA 在高光谱分类中结合多头交互注意与自适应融合。
+- **MLA.py**：LiteMLA 模块以多尺度线性注意和卷积层提升高分辨率预测。
+- **MLAttention.py**：多层级注意模块提供快速与精确两种分支应对多尺度依赖。
+- **MixStructure.py**：MixStructureBlock 将 CNN 与 Transformer 结构并行融合。
+- **NAF.py**：NAF 块以简化的门控与残差结构构建非注意力型 Transformer。
+- **PCBAM.py**：PCBAM 整合通道与空间注意模块，并叠加残差短接。
+- **RAB&HDRAB.py**：残差注意块组合通道池化与空间注意，用于图像去噪。
+- **RSSG.py**：RSSG 引入通道注意与状态空间卷积，用于图像恢复。
+- **SWA.py**：SWA 空间权重注意力模块用于医学图像分割中的特征筛选。
+- **TIF.py**：TIF 结构结合 Transformer 编码器与局部注意增强医学分割。
+- **ULSAM.py**：ULSAM 以子空间注意构建极轻量注意力，用于嵌入式网络。
+- **axial.py**：实现轴向注意力的 qkv 投影与行列解耦扫描。
+- **scSE.py**：scSE 将通道与空间挤压-激励并联，用于细粒度注意力增强。
 
-## 归一化/激活
+## 归一化与激活
 
-| 文件 | 主要类 | 源注释摘要 |
-| --- | --- | --- |
-| (ICCV 2021)Crossnorm-Selfnorm(领域泛化).py | CrossNorm, SelfNorm, CNSN 【F:(ICCV 2021)Crossnorm-Selfnorm(领域泛化).py†L6-L80】 | 论文：CrossNorm and SelfNorm for Generalization under Distribution Shifts；论文地址；https://arxiv.org/pdf/2102.02811【F:(ICCV 2021)Crossnorm-Selfnorm(领域泛化).py†L6-L7】 |
-| (ICLR 2023)ContraNorm(对比归一化层).py | ContraNorm 【F:(ICLR 2023)ContraNorm(对比归一化层).py†L6-L49】 | 论文：ContraNorm: A Contrastive Learning Perspective on Oversmoothing and Beyond；论文地址：https://ar5iv.labs.arxiv.org/html/2303.06562【F:(ICLR 2023)ContraNorm(对比归一化层).py†L3-L4】 |
-| (arxiv 2023)BCN.py | BatchNorm2D, BatchNormm2D, BatchNormm2DViiT 【F:(arxiv 2023)BCN.py†L6-L88】 | — |
-| (arxiv)Arelu.py | AReLU 【F:(arxiv)Arelu.py†L8-L18】 | — |
+- **(ICCV 2021)Crossnorm-Selfnorm(领域泛化).py**：实现 CrossNorm 与 SelfNorm 归一化策略以缓解分布偏移。
+- **(ICLR 2023)ContraNorm(对比归一化层).py**：ContraNorm 通过对比约束调整归一化统计抑制过平滑。
+- **(arxiv 2023)BCN.py**：BCN 提供批归一化的多变体及其在视觉 Transformer 中的适配。
+- **(arxiv)Arelu.py**：自适应 ReLU 激活根据输入分段调整斜率，改善梯度流。
 
-## 时序/频域建模
+## 时序与频域建模
 
-| 文件 | 主要类 | 源注释摘要 |
-| --- | --- | --- |
-| (AAAI 2019)AGCRN.py | AVWGCN, AGCRNCell, AVWDCRNN 【F:(AAAI 2019)AGCRN.py†L7-L51】 | 论文：Adaptive Graph Convolutional Recurrent Network for Traffic Forecasting；论文地址：https://arxiv.org/pdf/2007.02842【F:(AAAI 2019)AGCRN.py†L5-L6】 |
-| TSConformerBlock.py | FeedForwardModule, ConformerConvModule, AttentionModule 【F:TSConformerBlock.py†L10-L49】 | 论文：CMGAN: Conformer-Based Metric-GAN for Monaural Speech Enhancement；论文地址：https://arxiv.org/pdf/2209.11112v3【F:TSConformerBlock.py†L4-L6】 |
-| cleegn.py | Permute2d, CLEEGN 【F:cleegn.py†L6-L50】 | 论文：CLEEGN: A Convolutional Neural Network for Plug-and-Play Automatic EEG Reconstruction；论文地址：https://arxiv.org/pdf/2210.05988v2.pdf【F:cleegn.py†L4-L5】 |
-| f_sampling.py | FD, FU 【F:f_sampling.py†L6-L52】 | 论文：Multi-Scale Temporal Frequency Convolutional Network With Axial Attention for Speech Enhancement (ICASSP 2022)；论文地址：https://ieeexplore.ieee.org/document/9746610【F:f_sampling.py†L3-L4】 |
-| phase_encoder.py | ComplexConv2d, ComplexLinearProjection, PhaseEncoder 【F:phase_encoder.py†L7-L92】 | 论文：Multi-Scale Temporal Frequency Convolutional Network With Axial Attention for Speech Enhancement (ICASSP 2022)；论文地址：https://ieeexplore.ieee.org/document/9746610【F:phase_encoder.py†L4-L5】 |
-| tfcm.py | TFCM_Block, TFCM 【F:tfcm.py†L6-L70】 | 论文：Multi-Scale Temporal Frequency Convolutional Network With Axial Attention for Speech Enhancement(ICASSP 2022)；论文地址：https://ieeexplore.ieee.org/document/9746610【F:tfcm.py†L4-L5】 |
+- **(AAAI 2019)AGCRN.py**：AGCRN 提供自适应图卷积与循环单元，用于交通预测时序建模。
+- **TSConformerBlock.py**：TS-Conformer 模块结合前馈、卷积与自注意，面向语音增强。
+- **cleegn.py**：CLEEGN 网络包含特征重排与卷积编码器，用于 EEG 重建。
+- **f_sampling.py**：提供频域下采样与上采样单元，面向时频卷积网络。
+- **phase_encoder.py**：PhaseEncoder 组合复数卷积与线性映射，编码音频相位。
+- **tfcm.py**：TFCM 模块堆叠时频卷积与注意力，用于语音增强。
 
-## 注意力/Transformer模块
+## 训练策略与损失
 
-| 文件 | 主要类 | 源注释摘要 |
-| --- | --- | --- |
-| (ACCV 2022)CSCA.py | FusionModel, Block, MSC 【F:(ACCV 2022)CSCA.py†L8-L182】 | 论文：Spatio-channel Attention Blocks for Cross-modal Crowd Counting；论文地址：https://arxiv.org/pdf/2210.10392【F:(ACCV 2022)CSCA.py†L6-L7】 |
-| (ACCV 2024) LIA.py | SoftPooling2D, LocalAttention 【F:(ACCV 2024) LIA.py†L8-L40】 | 论文题目：PlainUSR: Chasing Faster ConvNet for Efficient Super-Resolution；论文地址：https://openaccess.thecvf.com/content/ACCV2024/papers/Wang_PlainUSR_Chasing_Faster_ConvNet_for_Efficient_Super-Resolution_ACCV_2024_paper.pdf【F:(ACCV 2024) LIA.py†L6-L7】 |
-| (Arxiv2024)MDAF.py | BiasFree_LayerNorm, WithBias_LayerNorm, LayerNorm 【F:(Arxiv2024)MDAF.py†L15-L48】 | 论文地址 https://arxiv.org/pdf/2405.01992【F:(Arxiv2024)MDAF.py†L1-L1】 |
-| (CVPR 2022) DAT.py | LayerNormProxy, DAttention 【F:(CVPR 2022) DAT.py†L10-L223】 | 论文题目：Efficient Attention: Attention with Linear Complexities；论文链接：https://openaccess.thecvf.com/content/CVPR2022/papers/Xia_Vision_Transformer_With_Deformable_Attention_CVPR_2022_paper.pdf【F:(CVPR 2022) DAT.py†L1-L2】 |
-| (CVPR 2024)RAMiT.py | DropPath, QKVProjection, SpatialSelfAttention 【F:(CVPR 2024)RAMiT.py†L26-L53】 | 论文：Reciprocal Attention Mixing Transformer for Lightweight Image Restoration(CVPR 2024 Workshop)；论文地址：https://arxiv.org/abs/2305.11474【F:(CVPR 2024)RAMiT.py†L6-L9】 |
-| (ECCV 2024)HTB.py | BiasFree_LayerNorm, WithBias_LayerNorm, LayerNorm 【F:(ECCV 2024)HTB.py†L24-L53】 | 论文：Restoring Images in Adverse Weather Conditions via Histogram Transformer (ECCV 2024)；论文地址：https://arxiv.org/pdf/2407.10172；全网最全100➕即插即用模块GitHub地址：https://github.com/ai-dawang/PlugNPlay-Modules【F:(ECCV 2024)HTB.py†L1-L3】 |
-| (ECCV2024)SMFA.py | DMlp, SMFA 【F:(ECCV2024)SMFA.py†L6-L49】 | 论文地址：https://openaccess.thecvf.com/content/ICCV2023/papers/Sun_Spatially-Adaptive_Feature_Modulation_for_Efficient_Image_Super-Resolution_ICCV_2023_paper.pdf【F:(ECCV2024)SMFA.py†L5-L5】 |
-| (ICCV 2021) RA.py | ResidualAttention 【F:(ICCV 2021) RA.py†L11-L24】 | 论文：Residual Attention: A Simple but Effective Method for Multi-Label Recognition；论文地址：https://arxiv.org/pdf/2108.02456【F:(ICCV 2021) RA.py†L5-L6】 |
-| (ICCV2023)SAFM.py | SAFM 【F:(ICCV2023)SAFM.py†L6-L39】 | 论文：https://arxiv.org/pdf/2302.13800【F:(ICCV2023)SAFM.py†L4-L5】 |
-| (ICLR 2022) Crossformer.py | Mlp, DynamicPosBias, Attention 【F:(ICLR 2022) Crossformer.py†L12-L90】 | 论文：CrossFormer: A Versatile Vision Transformer Based on Cross-scale Attention (ICLR 2022 Acceptance).；论文地址：https://arxiv.org/pdf/2108.00154【F:(ICLR 2022) Crossformer.py†L6-L7】 |
-| (ICLR 2022) MobileViTAttention.py | PreNorm, FeedForward, Attention 【F:(ICLR 2022) MobileViTAttention.py†L10-L93】 | 论文题目：MobileViT: Light-weight, General-purpose, and Mobile-friendly Vision Transformer；论文链接：https://arxiv.org/pdf/2110.02178【F:(ICLR 2022) MobileViTAttention.py†L5-L6】 |
-| (ICLR 2024)CA Block.py | ElementScale, ChannelAggregationFFN 【F:(ICLR 2024)CA Block.py†L22-L101】 | 论文：MogaNet: Multi-order Gated Aggregation Network (ICLR 2024)；论文地址：https://arxiv.org/pdf/2211.03295【F:(ICLR 2024)CA Block.py†L4-L6】 |
-| (ICPR 2022) MOATransformer.py | Mlp, WindowAttention, GlobalAttention 【F:(ICPR 2022) MOATransformer.py†L12-L160】 | 论文：Aggregating Global Features into Local Vision Transformer；论文地址：https://arxiv.org/pdf/2201.12903【F:(ICPR 2022) MOATransformer.py†L7-L8】 |
-| (NeurIPS 2021) CoAtNet.py | ScaledDotProductAttention, SwishImplementation, MemoryEfficientSwish 【F:(NeurIPS 2021) CoAtNet.py†L18-L104】 | 论文：CoAtNet: Marrying Convolution and Attention for All Data Sizes；论文地址：https://arxiv.org/pdf/2106.04803【F:(NeurIPS 2021) CoAtNet.py†L14-L15】 |
-| (NeurIPS 2021) GFNet.py | PatchEmbed, GlobalFilter, Mlp 【F:(NeurIPS 2021) GFNet.py†L10-L83】 | 论文：Global Filter Networks for Image Classification；论文地址：https://arxiv.org/pdf/2107.00645【F:(NeurIPS 2021) GFNet.py†L6-L7】 |
-| (TPAMI 2022) ViP.py | MLP, WeightedPermuteMLP 【F:(TPAMI 2022) ViP.py†L8-L52】 | 论文：Vision Permutator: A Permutable MLP-Like Architecture for Visual Recognition；论文地址：https://arxiv.org/pdf/2106.12368【F:(TPAMI 2022) ViP.py†L4-L5】 |
-| (arXiv 2019) ECA.py | ECAAttention 【F:(arXiv 2019) ECA.py†L13-L41】 | 论文：ECA-Net: Efficient Channel Attention for Deep Convolutional Neural Networks；论文地址：https://arxiv.org/pdf/1910.03151【F:(arXiv 2019) ECA.py†L7-L8】 |
-| (arXiv 2020 ) SSAN.py | SimplifiedScaledDotProductAttention 【F:(arXiv 2020 ) SSAN.py†L10-L78】 | — |
-| (arXiv 2021) AFT.py | AFT_FULL 【F:(arXiv 2021) AFT.py†L10-L57】 | — |
-| (arXiv 2021) EA.py | ExternalAttention 【F:(arXiv 2021) EA.py†L10-L40】 | — |
-| (arXiv 2021) MobileViTv2.py | MobileViTv2Attention 【F:(arXiv 2021) MobileViTv2.py†L10-L59】 | — |
-| (arXiv 2021) PSA.py | PSA 【F:(arXiv 2021) PSA.py†L11-L70】 | — |
-| (arXiv 2021) PSAN.py | ParallelPolarizedSelfAttention, SequentialPolarizedSelfAttention 【F:(arXiv 2021) PSAN.py†L10-L94】 | — |
-| (arXiv 2021) S2Attention.py | SplitAttention, S2Attention 【F:(arXiv 2021) S2Attention.py†L28-L70】 | — |
-| (arXiv 2023) ScaledDotProductAttention.py | ScaledDotProductAttention 【F:(arXiv 2023) ScaledDotProductAttention.py†L10-L78】 | 论文：Scaled Dot-Product Attention (SDPA)【F:(arXiv 2023) ScaledDotProductAttention.py†L4-L4】 |
-| (arXiv 2024) MoHAttention.py | MoHAttention 【F:(arXiv 2024) MoHAttention.py†L12-L132】 | 论文：MoHAttention；论文地址：https://arxiv.org/pdf/2406.19510【F:(arXiv 2024) MoHAttention.py†L4-L5】 |
-| CPAM.py | channel_att, local_att, CPAM 【F:CPAM.py†L7-L70】 | 论文：ASF-YOLO: A Novel YOLO Model with Attentional Scale Sequence Fusion for Cell Instance Segmentation(IMAVIS)；论文地址：https://arxiv.org/abs/2312.06458【F:CPAM.py†L4-L5】 |
-| CPCA2d.py | ChannelAttention, CPCABlock 【F:CPCA2d.py†L9-L70】 | — |
-| CRMSA.py | InnerAttention, CrossRegionAttntion 【F:CRMSA.py†L37-L249】 | — |
-| DA.py | DoubleAttentionLayer 【F:DA.py†L6-L68】 | — |
-| DASI.py | Bag, conv_block, DASI 【F:DASI.py†L8-L52】 | — |
-| DA_Block.py | DepthWiseConv2d, PAM_Module, CAM_Module 【F:DA_Block.py†L7-L123】 | 论文：Dual Attention Network for Scene Segmentation（DANet）；论文地址：https://arxiv.org/abs/1809.02983【F:DA_Block.py†L5-L6】 |
-| DICAM.py | Inc, Flatten, CAM 【F:DICAM.py†L5-L82】 | — |
-| DSAM.py | DSAMBlock, cubic_attention, spatial_strip_att 【F:DSAM.py†L7-L132】 | — |
-| EFF2d.py | SpatialAttention, Efficient_Attention_Gate, EfficientChannelAttention 【F:EFF2d.py†L7-L89】 | — |
-| ENLTB.py | ENLA, BasicBlock, Mlp 【F:ENLTB.py†L98-L214】 | — |
-| FADConv.py | OmniAttention, FrequencySelection, AdaptiveDilatedConv 【F:FADConv.py†L8-L328】 | 论文：Frequency-Adaptive Dilated Convolution for Semantic Segmentation[CVPR 2024]；论文地址：https://arxiv.org/abs/2403.05369【F:FADConv.py†L1-L2】 |
-| FCA.py | Mix, FCAttention 【F:FCA.py†L8-L54】 | — |
-| FCHiLo.py | PositionEmbedding, DSC, IDSC 【F:FCHiLo.py†L8-L91】 | — |
-| FECAttention.py | dct_channel_block 【F:FECAttention.py†L56-L90】 | — |
-| FFA.py | PALayer, CALayer, Block 【F:FFA.py†L9-L55】 | — |
-| FMB.py | DMlp, PCFN, SMFA 【F:FMB.py†L7-L50】 | — |
-| FMM.py | LayerNorm, CCM, SAFM 【F:FMM.py†L8-L66】 | — |
-| GAB.py | LayerNorm, group_aggregation_bridge 【F:GAB.py†L6-L76】 | — |
-| GAU.py | TA, SCA 【F:GAU.py†L4-L68】 | — |
-| GCTattention.py | GCT 【F:GCTattention.py†L7-L34】 | — |
-| GHPA.py | LayerNorm, Grouped_multi_axis_Hadamard_Product_Attention 【F:GHPA.py†L6-L97】 | — |
-| GLSA.py | BasicConv2d, ContextBlock, ConvBranch 【F:GLSA.py†L6-L143】 | — |
-| HAAM.py | Channelblock, Spatialblock, HAAM 【F:HAAM.py†L10-L147】 | — |
-| HWAB.py | DWT, IWT, SALayer 【F:HWAB.py†L43-L170】 | — |
-| LAE.py | Conv, LAE 【F:LAE.py†L16-L82】 | — |
-| LGAG.py | LGAG 【F:LGAG.py†L26-L86】 | — |
-| LPA.py | ChannelAttention, SpatialAttention, LPA 【F:LPA.py†L6-L64】 | — |
-| MDTA.py | Attention 【F:MDTA.py†L7-L42】 | Multi-DConv Head Transposed Self-Attention (MDTA)【F:MDTA.py†L1-L1】 |
-| MHIASA.py | EHIAAttention 【F:MHIASA.py†L10-L125】 | 论文：MHIAIFormer: Multi-Head Interacted and Adaptive Integrated Transformer with Spatial-Spectral Attention for Hyperspectral Image Classification；https://ieeexplore.ieee.org/abstract/document/10632582/【F:MHIASA.py†L6-L8】 |
-| MLA.py | LayerNorm2d, ConvLayer, LiteMLA 【F:MLA.py†L36-L180】 | 论文：EfficientViT: Multi-Scale Linear Attention for High-Resolution Dense Prediction；论文地址：https://arxiv.org/abs/2205.14756【F:MLA.py†L1-L2】 |
-| MLAttention.py | MLAttention, FastMLAttention 【F:MLAttention.py†L7-L88】 | — |
-| MixStructure.py | MixStructureBlock 【F:MixStructure.py†L6-L83】 | — |
-| NAF.py | LayerNormFunction, LayerNorm2d, SimpleGate 【F:NAF.py†L9-L169】 | — |
-| PCBAM.py | ChannelAttentionModule, SpatialAttentionModule, CBAM 【F:PCBAM.py†L5-L140】 | 论文：DAU-Net: Dual attention-aided U-Net for segmenting tumor in breast ultrasound images；论文地址：https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0303670【F:PCBAM.py†L3-L4】 |
-| RAB&HDRAB.py | Basic, ChannelPool, SAB 【F:RAB&HDRAB.py†L6-L167】 | 论文：Dual Residual Attention Network for Image Denoising；论文地址：https://www.sciencedirect.com/science/article/abs/pii/S0031320324000426【F:RAB&HDRAB.py†L3-L4】 |
-| RSSG.py | ChannelAttention, CAB, SS2D 【F:RSSG.py†L16-L143】 | 论文：MambaIR: A simple baseline for image restoration with state-space model；论文地址：https://arxiv.org/pdf/2402.15648.pdf【F:RSSG.py†L3-L4】 |
-| SWA.py | SWA 【F:SWA.py†L6-L59】 | 论文：DAU-Net: Dual attention-aided U-Net for segmenting tumor in breast ultrasound images；论文地址：https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0303670【F:SWA.py†L3-L4】 |
-| TIF.py | PreNorm, FeedForward, Attention 【F:TIF.py†L7-L120】 | 论文：DS-TransUNet: Dual Swin Transformer U-Net for Medical Image Segmentation；论文地址：https://arxiv.org/abs/2106.06716【F:TIF.py†L3-L4】 |
-| ULSAM.py | SubSpace, ULSAM 【F:ULSAM.py†L7-L91】 | ULSAM: Ultra-Lightweight Subspace Attention Module for Compact Convolutional Neural Networks(WACV20)【F:ULSAM.py†L4-L4】 |
-| axial.py | qkv_transform, AxialAttention 【F:axial.py†L10-L129】 | — |
-| scSE.py | cSE, sSE, scSE 【F:scSE.py†L6-L32】 | — |
+- **(CVPR 2020)CBDE.py**：复现 MoCo 的对比学习数据增强与编码器，支持自监督预训练。
+- **(Elsevier 2024)CF_loss.py**：CF-Loss 提供针对视网膜多分类分割的临床友好损失计算。
+- **LMFLoss.py**：实现 Focal、LDAM 与结合权重的 LMFLoss，多用于长尾分类。
 
-## 训练策略/损失
+## 任务特定/领域组件
 
-| 文件 | 主要类 | 源注释摘要 |
-| --- | --- | --- |
-| (CVPR 2020)CBDE.py | MoCo, ResBlock, ResEncoder 【F:(CVPR 2020)CBDE.py†L7-L185】 | 论文：Momentum Contrast for Unsupervised Visual Representation Learning；论文地址：https://arxiv.org/pdf/1911.05722【F:(CVPR 2020)CBDE.py†L5-L6】 |
-| (Elsevier 2024)CF_loss.py | CF_Loss_3D 【F:(Elsevier 2024)CF_loss.py†L12-L53】 | 论文：CF-Loss: Clinically-relevant feature optimised loss function for retinal multi-class vessel segmentation and vascular feature measurement【F:(Elsevier 2024)CF_loss.py†L5-L6】 |
-| LMFLoss.py | FocalLoss, LDAMLoss, LMFLoss 【F:LMFLoss.py†L8-L77】 | — |
+- **(ACM MM 2023)Deepfake(深度伪造检测).py**：深度伪造检测网络的 CMCE 与 LFGA 模块，强调局部与全局特征融合。
+- **(ECCV 2024)RCM语义分割.py**：RCM 语义分割块通过上下文重建与注意力提升高效分割表现。
+- **(ICPR 2021)CAN(人群计数,CV2维任务通用).py**：CAN 模块为人群计数提供多尺度上下文编码与解码结构。
+- **BFAM.py**：BFAM 面向遥感变化检测，融合 SIMAM 注意与多尺度卷积。
+- **DPTAM.py**：DPTAM 结合双路 Transformer 注意力检测遥感变化。
+- **PGM.py**：Prompt Generation Module 按任务生成提示向量，便于多任务调优。
+- **TIAM.py**：时空交互注意模块在遥感变化检测中建模跨时间依赖。
 
-## 领域任务组件
+## 工具与脚手架
 
-| 文件 | 主要类 | 源注释摘要 |
-| --- | --- | --- |
-| (ACM MM 2023)Deepfake(深度伪造检测).py | CMCE, LFGA 【F:(ACM MM 2023)Deepfake(深度伪造检测).py†L9-L79】 | 论文：Locate and Verify: A Two-Stream Network for Improved Deepfake Detection；论文地址：https://arxiv.org/pdf/2309.11131【F:(ACM MM 2023)Deepfake(深度伪造检测).py†L6-L7】 |
-| (ECCV 2024)RCM语义分割.py | ConvMlp, RCA, RCM 【F:(ECCV 2024)RCM语义分割.py†L8-L79】 | 论文：Context-Guided Spatial Feature Reconstruction for Efficient Semantic Segmentation[ECCV 2024]；论文地址：https://arxiv.org/pdf/2405.06228；全网最全100➕即插即用模块GitHub地址：https://github.com/ai-dawang/PlugNPlay-Modules【F:(ECCV 2024)RCM语义分割.py†L1-L3】 |
-| (ICPR 2021)CAN(人群计数,CV2维任务通用).py | ContextualModule 【F:(ICPR 2021)CAN(人群计数,CV2维任务通用).py†L11-L47】 | 论文：Encoder-Decoder Based Convolutional Neural Networks with Multi-Scale-Aware Modules for Crowd Counting；论文地址：https://ieeexplore.ieee.org/document/9413286【F:(ICPR 2021)CAN(人群计数,CV2维任务通用).py†L8-L9】 |
-| AFPN.py | BasicBlock, Upsample, Downsample_x2 【F:AFPN.py†L20-L66】 | 论文：AFPN: Asymptotic Feature Pyramid Network for Object Detection；论文地址：https://arxiv.org/pdf/2306.15988【F:AFPN.py†L6-L7】 |
-| BFAM.py | simam_module, BFAM 【F:BFAM.py†L7-L79】 | 论文：B2CNet: A Progressive Change Boundary-to-Center Refinement Network for Multitemporal Remote Sensing Images Change Detection；论文地址：https://ieeexplore.ieee.org/document/10547405【F:BFAM.py†L1-L2】 |
-| DPTAM.py | DPTAM 【F:DPTAM.py†L8-L136】 | 论文：Dual Parallel Transformer Attention Mechanism for Change Detection；论文地址：https://doi.org/10.1016/j.eswa.2024.124939【F:DPTAM.py†L4-L5】 |
-| MCM.py | MCM 【F:MCM.py†L10-L99】 | 论文：MAGNet: Multi-scale Awareness and Global fusion Network for RGB-D salient object detection | KBS；论文地址：https://www.sciencedirect.com/science/article/abs/pii/S0950705124007603；github地址：https://github.com/mingyu6346/MAGNet【F:MCM.py†L5-L7】 |
-| MDCR.py | conv_block, MDCR 【F:MDCR.py†L7-L125】 | 论文：HCF-Net: Hierarchical Context Fusion Network for Infrared Small Object Detection；论文地址：https://arxiv.org/pdf/2403.10778v1.pdf【F:MDCR.py†L5-L6】 |
-| PGM.py | PromptGenBlock 【F:PGM.py†L6-L38】 | — |
-| TIAM.py | SpatiotemporalAttentionFull, SpatiotemporalAttentionBase, SpatiotemporalAttentionFullNotWeightShared 【F:TIAM.py†L7-L144】 | 论文：Robust change detection for remote sensing images based on temporospatial interactive attention module；论文地址：https://www.sciencedirect.com/science/article/pii/S1569843224001213【F:TIAM.py†L3-L4】 |
-| UCDC.py | UCDC 【F:UCDC.py†L17-L69】 | 论文：ABC: Attention with Bilinear Correlation for Infrared Small Target Detection ICME2023；论文地址：https://arxiv.org/pdf/2303.10321【F:UCDC.py†L4-L5】 |
+- **特征维度转换.py**：提供二维与三维张量的尺寸转换工具，便于模块适配不同输入。
